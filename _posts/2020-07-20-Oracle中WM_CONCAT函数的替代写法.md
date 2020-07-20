@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Oracle中WM_CONCAT函数的替代写法'
-date: 2020-06-30
+date: 2020-07-20
 author: Anarkh-Lee
 cover: 'http://on2171g4d.bkt.clouddn.com/jekyll-banner.png'
 tags: Oracle
