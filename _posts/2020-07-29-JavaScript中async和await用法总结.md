@@ -12,6 +12,238 @@ tags: JavaScript
 
 > JavaScript中async/await用法总结
 
+### 0.前言（async function函数与await）
+
+`async function` 用来定义一个返回 `AsyncFunction`对象的异步函数。异步函数是指通过事件循环异步执行的函数，它会通过一个隐式的 `Promise` 返回其结果。如果你在代码中使用了异步函数，就会发现它的语法和结构会更像是标准的同步函数。
+
+#### 0.1语法
+
+```javascript
+async function name([param[, param[, ... param]]]) { statements }
+```
+
+* 参数
+  * `name`：函数名称
+  * `param`：传递给函数的参数
+  * `statements`：函数体语句
+* 返回值
+  * 返回的`Promise`对象会运行执行（resolve）异步函数的返回结果，或者运行拒绝（reject）--如果一步函数抛出异常的话。
+
+#### 0.2描述
+
+一个async一步函数可以包含0个或者多个`await`指令，该指令会暂停异步函数的执行，并等待`Promise`执行，然后继续执行异步函数，并返回结果。解析过后的返回值在`Promise`中按照`await`表达式的返回值对待。使用async/await语法能让开发者在异步代码中也按照类似同步代码中一样的方式应用try-catch语句。
+
+`await`关键字只在异步函数内有效。如果在异步函数外使用它，会抛出语法错误。
+
+注意，当异步函数暂停时，它调用的函数会继续执行（收到异步函数返回的隐式Promise）。
+
+`async/await`的目的是简化使用多个promise时的同步行为，并对一组Promises执行某些操作。正如Promises类似于结构化回调，`async/await`更像结合了generators和promises。
+
+`async`函数通常返回一个`Promise`对象。如果`async`函数的返回值不是一个标准意义上的`Promise`对象，那它（该返回）一定是包裹在了一个`Promise`对象里面。
+
+例如：
+
+```javascript
+async function foo() {
+   return 1
+}
+```
+
+等价于：
+
+```javascript
+function foo() {
+   return Promise.resolve(1)
+}
+```
+
+async函数的函数体可以被认为是由0个或者多个await表达式分割开来。第一行代码到第一个await表达式之间的代码是同步运行的。在这种情况下（函数体中没有await表达式），async函数会同步运行。如果在方法体内有await表达式，async方法将会异步执行。
+
+例如：
+
+```javascript
+async function foo() {
+   await 1
+}
+```
+
+等价于：
+
+```javascript
+function foo() {
+   return Promise.resolve(1).then(() => undefined)
+}
+```
+
+在await表达式之后的代码可以被认为是存在在链式调用的then回调方法中。
+
+#### 0.4示例
+
+**简单例子**
+
+```javascript
+var resolveAfter2Seconds = function() {
+  console.log("starting slow promise");
+  return new Promise(resolve => {
+    setTimeout(function() {
+      resolve("slow");
+      console.log("slow promise is done");
+    }, 2000);
+  });
+};
+
+var resolveAfter1Second = function() {
+  console.log("starting fast promise");
+  return new Promise(resolve => {
+    setTimeout(function() {
+      resolve("fast");
+      console.log("fast promise is done");
+    }, 1000);
+  });
+};
+
+var sequentialStart = async function() {
+  console.log('==SEQUENTIAL START==');
+
+  // 1. Execution gets here almost instantly
+  const slow = await resolveAfter2Seconds();
+  console.log(slow); // 2. this runs 2 seconds after 1.
+
+  const fast = await resolveAfter1Second();
+  console.log(fast); // 3. this runs 3 seconds after 1.
+}
+
+var concurrentStart = async function() {
+  console.log('==CONCURRENT START with await==');
+  const slow = resolveAfter2Seconds(); // starts timer immediately
+  const fast = resolveAfter1Second(); // starts timer immediately
+
+  // 1. Execution gets here almost instantly
+  console.log(await slow); // 2. this runs 2 seconds after 1.
+  console.log(await fast); // 3. this runs 2 seconds after 1., immediately after 2., since fast is already resolved
+}
+
+var concurrentPromise = function() {
+  console.log('==CONCURRENT START with Promise.all==');
+  return Promise.all([resolveAfter2Seconds(), resolveAfter1Second()]).then((messages) => {
+    console.log(messages[0]); // slow
+    console.log(messages[1]); // fast
+  });
+}
+
+var parallel = async function() {
+  console.log('==PARALLEL with await Promise.all==');
+  
+  // Start 2 "jobs" in parallel and wait for both of them to complete
+  await Promise.all([
+      (async()=>console.log(await resolveAfter2Seconds()))(),
+      (async()=>console.log(await resolveAfter1Second()))()
+  ]);
+}
+
+// This function does not handle errors. See warning below!
+var parallelPromise = function() {
+  console.log('==PARALLEL with Promise.then==');
+  resolveAfter2Seconds().then((message)=>console.log(message));
+  resolveAfter1Second().then((message)=>console.log(message));
+}
+
+sequentialStart(); // after 2 seconds, logs "slow", then after 1 more second, "fast"
+
+// wait above to finish
+setTimeout(concurrentStart, 4000); // after 2 seconds, logs "slow" and then "fast"
+
+// wait again
+setTimeout(concurrentPromise, 7000); // same as concurrentStart
+
+// wait again
+setTimeout(parallel, 10000); // truly parallel: after 1 second, logs "fast", then after 1 more second, "slow"
+
+// wait again
+setTimeout(parallelPromise, 13000); // same as parallel
+```
+
+**对例子分析**
+
+* await and parallelism（并行）
+
+  在`sequentialStart`中，程序在第一个`await`停留了2秒，然后又在第二个`await`停留了1秒。直到第一个计时器结束后，第二个计时器才被创建。程序需要3秒执行完毕。
+
+  
+  在 `concurrentStart`中，两个计时器被同时创建，然后执行`await`。这两个计时器同时运行，这意味着程序完成运行只需要2秒，而不是3秒,即最慢的计时器的时间。
+
+  但是 `await `仍旧是顺序执行的，第二个 `await` 还是得等待第一个执行完。在这个例子中，这使得先运行结束的输出出现在最慢的输出之后。
+
+  如果你希望并行执行两个或更多的任务，你必须像在`parallel`中一样使用`await Promise.all([job1(), job2()])`。
+
+* async/await和Promise#then对比及错误处理
+
+  大多数异步函数也可以使用Promises编写。但是，在错误处理方面，`async`函数更容易捕获异常错误
+
+  上面例子中的`concurrentStart`函数和`concurrentPromise`函数在功能上都是等效的。在`concurrentStart`函数中，如果任一`await`ed调用失败，它将自动捕获异常，异步函数执行中断，并通过隐式返回Promise将错误传递给调用者。
+
+  在Promise例子中这种情况同样会发生，该函数必须负责返回一个捕获函数完成的`Promise`。在`concurrentPromise`函数中，这意味着它从`Promise.all([]).then()`返回一个Promise。事实上，在此示例的先前版本忘记了这样做！
+
+  但是，`async`函数仍有可能然可能错误地忽略错误。
+  以`parallel`异步函数为例。 如果它没有等待`await`（或返回）`Promise.all([])`调用的结果，则不会传播任何错误。
+  虽然`parallelPromise`函数示例看起来很简单，但它根本不会处理错误！ 这样做需要一个类似于`return ``Promise.all([])`处理方式。
+
+**使用async函数重写promise链**
+
+返回 `Promise`的 API 将会产生一个 promise 链，它将函数肢解成许多部分。例如下面的代码：
+
+```javascript
+function getProcessedData(url) {
+  return downloadData(url) // 返回一个 promise 对象
+    .catch(e => {
+      return downloadFallbackData(url)  // 返回一个 promise 对象
+    })
+    .then(v => {
+      return processDataInWorker(v); // 返回一个 promise 对象
+    });
+}
+```
+
+可以重写为单个async函数：
+
+```javascript
+async function getProcessedData(url) {
+  let v;
+  try {
+    v = await downloadData(url); 
+  } catch (e) {
+    v = await downloadFallbackData(url);
+  }
+  return processDataInWorker(v);
+}
+```
+
+注意，在上述示例中，`return` 语句中没有 `await` 操作符，因为 `async function` 的返回值将被隐式地传递给 `Promise.resolve`。
+
+**return await promiseValue与retrun promiseValue的比较**
+
+返回值`隐式的传递给``Promise.resolve`，并不意味着`return await promiseValue;和return promiseValue;`在功能上相同。
+
+看下下面重写的上面代码，在`processDataInWorker`抛出异常时返回了null：
+
+```javascript
+async function getProcessedData(url) {
+  let v;
+  try {
+    v = await downloadData(url);
+  } catch(e) {
+    v = await downloadFallbackData(url);
+  }
+  try {
+    return await processDataInWorker(v); // 注意 `return await` 和单独 `return` 的比较
+  } catch (e) {
+    return null;
+  }
+}
+```
+
+简单地写上`return processDataInworker(v);将导致在processDataInWorker(v)`出错时function返回值为`Promise`而不是返回null。`return foo;`和`return await foo;`，有一些细微的差异:`return foo;`不管`foo`是promise还是rejects都将会直接返回`foo`。相反地，如果`foo`是一个`Promise`，`return await foo;`将等待`foo`执行(resolve)或拒绝(reject)，如果是拒绝，将会在返回前抛出异常。
+
 ### 1.async和await作用
 
 async 是“异步”的简写,而 await 可以认为是 async wait 的简写。
