@@ -10,7 +10,7 @@ tags: SpringCloud
 
 ---
 
-> SpringCloud整体架构概览
+> 参考自https://juejin.im/post/6844903938748219406，并在此基础上进行完善。
 
 ## 什么是SpringCloud
 
