@@ -1,0 +1,443 @@
+---
+layout: post
+title: 'SpringCloud--02Spring Cloud Eureka：服务注册与发现'
+date: 2020-08-22
+author: Anarkh-Lee
+cover: 'http://on2171g4d.bkt.clouddn.com/jekyll-banner.png'
+tags: SpringCloud
+
+
+
+---
+
+> 参考自https://juejin.im/post/6844903940312530957，并在此基础上进行完善。
+
+## 摘要
+
+Spring Cloud Eureka是Spring Cloud Netflix 子项目的核心组件之一，主要用于微服务架构中的服务治理。 本文将对搭建Eureka注册中心，搭建Eureka客户端，搭建Eureka集群及给Eureka注册中心添加登录认证进行介绍。
+
+## Eureka简介
+
+在微服务架构中往往会有一个注册中心，每个微服务都会向注册中心去注册自己的地址及端口信息，注册中心维护着服务名称与服务实例的对应关系。每个微服务都会定时从注册中心获取服务列表，同时汇报自己的运行情况，这样当有的服务需要调用其他服务时，就可以从自己获取到的服务列表中获取实例地址进行调用，Eureka实现了这套服务注册与发现机制。
+
+## 搭建Eureka注册中心
+
+> 这里我们以创建并运行Eureka注册中心来看看在IDEA中创建并运行SpringCloud应用的正确姿势。
+
+### 使用IDEA来创建SpringCloud应用
+
+- 创建一个eureka-server模块，并使用Spring Initializer初始化一个SpringBoot项目
+
+
+
+![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe277e7b5205?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+
+
+- 填写应用信息
+
+
+
+![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe277e8fcd31?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+
+
+- 选择你需要的SpringCloud组件进行创建
+
+
+
+![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe277f7412c1?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+
+
+- 创建完成后会发现pom.xml文件中已经有了eureka-server的依赖
+
+```
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+</dependency>
+复制代码
+```
+
+- 在启动类上添加@EnableEurekaServer注解来启用Euerka注册中心功能
+
+```
+@EnableEurekaServer
+@SpringBootApplication
+public class EurekaServerApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(EurekaServerApplication.class, args);
+    }
+
+}
+复制代码
+```
+
+- 在配置文件application.yml中添加Eureka注册中心的配置
+
+```
+server:
+  port: 8001 #指定运行端口
+spring:
+  application:
+    name: eureka-server #指定服务名称
+eureka:
+  instance:
+    hostname: localhost #指定主机地址
+  client:
+    fetch-registry: false #指定是否要从注册中心获取服务（注册中心不需要开启）
+    register-with-eureka: false #指定是否要注册到注册中心（注册中心不需要开启）
+  server:
+    enable-self-preservation: false #关闭保护模式
+复制代码
+```
+
+### 使用IDEA的Run Dashboard来运行SpringCloud应用
+
+> 此时服务已经创建完成，点击启动类的main方法就可以运行了。但是在微服务项目中我们会启动很多服务，为了便于管理，我们使用IDEA的Run Dashboard来启动。
+
+- 打开Run Dashboard，默认情况下，当IDEA检查到你的项目中有SpringBoot应用时，会提示你开启，如果你没开启，可以用以下方法开启。
+
+
+
+![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe277ff2bc45?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+
+
+- 运行SpringCloud应用
+
+
+
+![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe278027d95e?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+
+
+- 运行完成后访问地址http://localhost:8001/可以看到Eureka注册中心的界面
+
+
+
+![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe278030db96?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+
+
+## 搭建Eureka客户端
+
+- 新建一个eureka-client模块，并在pom.xml中添加如下依赖
+
+```
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+复制代码
+```
+
+- 在启动类上添加@EnableDiscoveryClient注解表明是一个Eureka客户端
+
+```
+@EnableDiscoveryClient
+@SpringBootApplication
+public class EurekaClientApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(EurekaClientApplication.class, args);
+    }
+
+}
+复制代码
+```
+
+- 在配置文件application.yml中添加Eureka客户端的配置
+
+```
+server:
+  port: 8101 #运行端口号
+spring:
+  application:
+    name: eureka-client #服务名称
+eureka:
+  client:
+    register-with-eureka: true #注册到Eureka的注册中心
+    fetch-registry: true #获取注册实例列表
+    service-url:
+      defaultZone: http://localhost:8001/eureka/ #配置注册中心地址
+复制代码
+```
+
+- 运行eureka-client
+
+
+
+![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27aac05df8?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+
+
+- 查看注册中心http://localhost:8001/发现Eureka客户端已经成功注册
+
+
+
+![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27ac534f2c?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+
+
+## 搭建Eureka注册中心集群
+
+### 搭建两个注册中心
+
+> 由于所有服务都会注册到注册中心去，服务之间的调用都是通过从注册中心获取的服务列表来调用，注册中心一旦宕机，所有服务调用都会出现问题。所以我们需要多个注册中心组成集群来提供服务，下面将搭建一个双节点的注册中心集群。
+
+- 给eureka-sever添加配置文件application-replica1.yml配置第一个注册中心
+
+```
+server:
+  port: 8002
+spring:
+  application:
+    name: eureka-server
+eureka:
+  instance:
+    hostname: replica1
+  client:
+    serviceUrl:
+      defaultZone: http://replica2:8003/eureka/ #注册到另一个Eureka注册中心
+    fetch-registry: true
+    register-with-eureka: true
+复制代码
+```
+
+- 给eureka-sever添加配置文件application-replica2.yml配置第二个注册中心
+
+```
+server:
+  port: 8003
+spring:
+  application:
+    name: eureka-server
+eureka:
+  instance:
+    hostname: replica2
+  client:
+    serviceUrl:
+      defaultZone: http://replica1:8002/eureka/ #注册到另一个Eureka注册中心
+    fetch-registry: true
+    register-with-eureka: true
+复制代码
+```
+
+**这里我们通过两个注册中心互相注册，搭建了注册中心的双节点集群，由于defaultZone使用了域名，所以还需在本机的host文件中配置一下。**
+
+- 修改本地host文件
+
+```
+127.0.0.1 replica1
+127.0.0.1 replica2
+复制代码
+```
+
+### 运行Eureka注册中心集群
+
+> 在IDEA中我们可以通过使用不同的配置文件来启动同一个SpringBoot应用。
+
+- 添加两个配置，分别以application-replica1.yml和application-replica2.yml来启动eureka-server
+
+> 从原启动配置中复制一个出来
+
+
+
+![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27ade78f19?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+
+
+> 配置启动的配置文件
+
+
+
+![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27ae4bf18b?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+
+
+- 启动两个eureka-server，访问其中一个注册中心http://replica1:8002/发现另一个已经成为其备份
+
+
+
+![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27ae5845e2?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+
+
+- 修改Eureka-client，让其连接到集群
+
+> 添加eureka-client的配置文件application-replica.yml，让其同时注册到两个注册中心。
+
+```
+server:
+  port: 8102
+spring:
+  application:
+    name: eureka-client
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://replica1:8002/eureka/,http://replica2:8003/eureka/ #同时注册到两个注册中心
+复制代码
+```
+
+> 以该配置文件启动后访问任意一个注册中心节点都可以看到eureka-client
+
+
+
+![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27b0eddfe3?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+
+
+## 给Eureka注册中心添加认证
+
+### 创建一个eureka-security-server模块，在pom.xml中添加以下依赖
+
+> 需要添加SpringSecurity模块。
+
+```
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+复制代码
+```
+
+### 添加application.yml配置文件
+
+> 主要是配置了登录注册中心的用户名和密码。
+
+```
+server:
+  port: 8004
+spring:
+  application:
+    name: eureka-security-server
+  security: #配置SpringSecurity登录用户名和密码
+    user:
+      name: macro
+      password: 123456
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    fetch-registry: false
+    register-with-eureka: false
+复制代码
+```
+
+### 添加Java配置WebSecurityConfig
+
+> 默认情况下添加SpringSecurity依赖的应用每个请求都需要添加CSRF token才能访问，Eureka客户端注册时并不会添加，所以需要配置/eureka/**路径不需要CSRF token。
+
+```
+@EnableWebSecurity
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().ignoringAntMatchers("/eureka/**");
+        super.configure(http);
+    }
+}
+复制代码
+```
+
+### 运行eureka-security-server，访问http://localhost:8004发现需要登录认证
+
+
+
+![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27deed7671?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+
+
+### eureka-client注册到有登录认证的注册中心
+
+- 配置文件中需要修改注册中心地址格式
+
+```
+http://${username}:${password}@${hostname}:${port}/eureka/
+复制代码
+```
+
+- 添加application-security.yml配置文件，按格式修改用户名和密码
+
+```
+server:
+  port: 8103
+spring:
+  application:
+    name: eureka-client
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://macro:123456@localhost:8004/eureka/
+复制代码
+```
+
+- 以application-security.yml配置运行eureka-client，可以在注册中心界面看到eureka-client已经成功注册
+
+
+
+![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27df24aeb6?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+
+
+## Eureka的常用配置
+
+```
+eureka:
+  client: #eureka客户端配置
+    register-with-eureka: true #是否将自己注册到eureka服务端上去
+    fetch-registry: true #是否获取eureka服务端上注册的服务列表
+    service-url:
+      defaultZone: http://localhost:8001/eureka/ # 指定注册中心地址
+    enabled: true # 启用eureka客户端
+    registry-fetch-interval-seconds: 30 #定义去eureka服务端获取服务列表的时间间隔
+  instance: #eureka客户端实例配置
+    lease-renewal-interval-in-seconds: 30 #定义服务多久去注册中心续约
+    lease-expiration-duration-in-seconds: 90 #定义服务多久不去续约认为服务失效
+    metadata-map:
+      zone: jiangsu #所在区域
+    hostname: localhost #服务主机名称
+    prefer-ip-address: false #是否优先使用ip来作为主机名
+  server: #eureka服务端配置
+    enable-self-preservation: false #关闭eureka服务端的保护机制
+复制代码
+```
+
+## 使用到的模块
+
+```
+springcloud-learning
+├── eureka-server -- eureka注册中心
+├── eureka-security-server -- 带登录认证的eureka注册中心
+└── eureka-client -- eureka客户端
+```
+
+
+作者：MacroZheng链接：https://juejin.im/post/6844903940312530957来源：掘金著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+
+
+
+
+
+
+<iframe type="text/html" width="100%" height="385" src="http://www.youtube.com/embed/gfmjMWjn-Xg" frameborder="0"></iframe>
