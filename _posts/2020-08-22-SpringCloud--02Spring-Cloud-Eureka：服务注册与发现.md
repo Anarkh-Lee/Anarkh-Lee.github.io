@@ -30,7 +30,7 @@ Spring Cloud Eureka是Spring Cloud Netflix 子项目的核心组件之一，主�
 
 
 
-![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe277e7b5205?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](.\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\1.png)
 
 
 
@@ -38,7 +38,7 @@ Spring Cloud Eureka是Spring Cloud Netflix 子项目的核心组件之一，主�
 
 
 
-![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe277e8fcd31?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](.\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\2.png)
 
 
 
@@ -46,7 +46,7 @@ Spring Cloud Eureka是Spring Cloud Netflix 子项目的核心组件之一，主�
 
 
 
-![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe277f7412c1?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](.\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\3.png)
 
 
 
@@ -102,7 +102,7 @@ eureka:
 
 
 
-![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe277ff2bc45?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](.\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\4.png)
 
 
 
@@ -110,7 +110,7 @@ eureka:
 
 
 
-![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe278027d95e?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](.\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\5.png)
 
 
 
@@ -118,7 +118,7 @@ eureka:
 
 
 
-![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe278030db96?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](.\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\6.png)
 
 
 
@@ -175,7 +175,7 @@ eureka:
 
 
 
-![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27aac05df8?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](.\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\7.png)
 
 
 
@@ -183,7 +183,7 @@ eureka:
 
 
 
-![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27ac534f2c?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](.\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\8.png)
 
 
 
@@ -251,7 +251,7 @@ eureka:
 
 
 
-![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27ade78f19?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](.\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\9.png)
 
 
 
@@ -259,7 +259,7 @@ eureka:
 
 
 
-![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27ae4bf18b?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](.\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\10.png)
 
 
 
@@ -267,7 +267,7 @@ eureka:
 
 
 
-![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27ae5845e2?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](.\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\11.png)
 
 
 
@@ -294,7 +294,7 @@ eureka:
 
 
 
-![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27b0eddfe3?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](.\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\12.png)
 
 
 
@@ -361,7 +361,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
 
-![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27deed7671?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](.\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\13.png)
 
 
 
@@ -395,14 +395,14 @@ eureka:
 
 
 
-![img](https://user-gold-cdn.xitu.io/2019/9/11/16d1fe27df24aeb6?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](.\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\14.png)
 
 
 
 ## Eureka的常用配置
 
 ```
-eureka:
+![14](D:\myBlob\Anarkh-Lee.github.io\_posts\img\SpringCloud\Spring-Cloud-Eureka-服务注册与发现\14.png)eureka:
   client: #eureka客户端配置
     register-with-eureka: true #是否将自己注册到eureka服务端上去
     fetch-registry: true #是否获取eureka服务端上注册的服务列表
