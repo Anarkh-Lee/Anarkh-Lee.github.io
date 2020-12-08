@@ -11,7 +11,7 @@ tags: SpringCloud
 
 ---
 
-> 参考自https://juejin.im/post/6844903940312530957，并在此基础上进行完善。
+> SpringCloud--03Spring Cloud Ribbon：负载均衡的服务调用
 
 ## 摘要
 
