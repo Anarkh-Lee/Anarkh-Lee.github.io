@@ -4,7 +4,7 @@ title: 'Oracle下Hibernate查询返回自定义Bean'
 date: 2020-12-24
 author: Anarkh-Lee
 cover: 'http://on2171g4d.bkt.clouddn.com/jekyll-banner.png'
-tags: 轮子
+tags: Hibernate
 
 
 
