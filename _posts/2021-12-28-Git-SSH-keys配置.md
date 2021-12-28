@@ -38,7 +38,7 @@ SSH 为 Secure Shell 的缩写，由 IETF 的网络小组（Network Working Grou
 * 如果电脑上**有**，就会显示**bash: /c/Users/…/.ssh: Is a directory**
 * 如果电脑上**没有**，那就显示**bash: /c/Users/…/.ssh: No such file or directory**
 
-![](https://github.com/Anarkh-Lee/Anarkh-Lee.github.io/blob/master/_posts/img/Git/ssh1.png)
+![](.\img\Git\ssh1.png)
 
 ![](.\img\Git\ssh2.png)
 
