@@ -234,6 +234,22 @@ ArrayList<PatentDto> collect1 = patentDtoList.stream().collect(Collectors.collec
 
 
 
+### 2.排序
+
+#### 升序：
+
+```java
+//根据msgSeq字段对TimMsgDTO的list进行升序排序
+List<TimMsgDTO> sortedNotnullMsgList = notnullMsgList.stream().sorted(Comparator.comparing(TimMsgDTO::getMsgSeq)).collect(Collectors.toList());
+```
+
+#### 降序：
+
+```java
+//根据start_time字段对SynBaseinfoDTO的list进行降序排序
+List<SynBaseinfoDTO> sortedList = returnList.stream().sorted(Comparator.comparing(SynBaseinfoDTO::getStart_time).reversed()).collect(Collectors.toList());
+```
+
 
 
 
