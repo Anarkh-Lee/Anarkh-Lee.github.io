@@ -26,6 +26,8 @@ tags: HttpClient
 
 **描述：**
 
+本地使用没有问题，打版到服务器上报错如下：
+
 java.lang.IllegalArgumentException：Illegal character in query at index 200
 
 使用HttpPost调用接口时遇到如下报错信息：
