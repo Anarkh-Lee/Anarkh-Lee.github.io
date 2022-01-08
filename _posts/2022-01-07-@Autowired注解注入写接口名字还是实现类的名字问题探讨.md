@@ -710,6 +710,7 @@ public class AnarkhServiceImpl2 implements AnarkhService{
 ```java
 @Autowired
 @Qualifier("anarkhServiceImpl1")
+//注意此处指定的anarkhServiceImpl1中的a是小写，因为Spring在装配bean的时候，如果没有指定，会把类名的首字母小写作为bean的name
 private AnarkhService anarkhService;
 ```
 
