@@ -25,13 +25,13 @@ tags: Problem
 
 > 在开发过程中使用@Autowired注解遇到问题产生的一些想法
 
-### 问题
+### 1. 问题
 
 在开发过程中，别人使用了实现类注入，然后一直报错，找了好久原因，现用以下例子说明一下。
 
 准备两个接口（AnarkhService、InvokeService）和两个实现类（AnarkhServiceImpl、InvokeServiceImpl），其中InvokeServiceImpl是要注入AnarkhServiceImpl或AnarkhService的类。
 
-#### 第一种情况：只有自己的方法
+#### 1.1 第一种情况：只有自己的方法
 
 AnarkhService：
 
@@ -118,7 +118,7 @@ public class WwaaAct {
 
 
 
-#### 第二种情况：既有自己的方法也有事务增强（事务增强方法用private）
+#### 1.2 第二种情况：既有自己的方法也有事务增强（事务增强方法用private）
 
 AnarkhServiceImpl：
 
@@ -248,7 +248,7 @@ Caused by: org.hibernate.HibernateException: No Session found for current thread
 	... 72 more
 ```
 
-#### 第三种情况：既有自己的方法也有事务增强（事务增强方法用public）
+#### 1.3 第三种情况：既有自己的方法也有事务增强（事务增强方法用public）
 
 AnarkhServiceImpl：
 
@@ -402,7 +402,7 @@ Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No q
 	... 109 more
 ```
 
-#### 第四种情况：既有自己的方法也有事务增强（事务增强方法用private）,在自己方法上加上事务注解或者在类上加事务注解
+#### 1.4 第四种情况：既有自己的方法也有事务增强（事务增强方法用private）,在自己方法上加上事务注解或者在类上加事务注解
 
 AnarkhServiceImpl：
 
@@ -458,7 +458,7 @@ public class AnarkhServiceImpl implements AnarkhService{
 
 **结果与第三种情况一致。**
 
-#### 第五种情况：既有自己的方法也有事务增强（事务增强方法用private），但controller中对AnarkhService没使用@Autowired注入，而是直接new了一个对象
+#### 1.5 第五种情况：既有自己的方法也有事务增强（事务增强方法用private），但controller中对AnarkhService没使用@Autowired注入，而是直接new了一个对象
 
 ```java
 @Controller
@@ -583,7 +583,7 @@ Caused by: java.lang.NullPointerException
 
 
 
-#### 正确做法：如果不涉及对实现类增强，如事务、日志等，可以用@Autowired对实现类进行注入；但是如果涉及到实现类增强，就必须用@Autowired对接口进行注入。遂为了方便记忆，使用@Autowired注入时统一使用接口进行注入。
+#### 1.6 正确做法：如果不涉及对实现类增强，如事务、日志等，可以用@Autowired对实现类进行注入；但是如果涉及到实现类增强，就必须用@Autowired对接口进行注入。遂为了方便记忆，使用@Autowired注入时统一使用接口进行注入。
 
 controller中不能使用new，第五种情况仍不行。
 
@@ -629,16 +629,16 @@ public class AnarkhServiceImpl implements AnarkhService{
 }
 ```
 
-### 结论与分析
+### 2. 结论与分析
 
-#### 结论
+#### 2.1 结论
 
 分两种情况来说：
 
 * 如果只是单纯的数据注入，是可以直接注入实现类的。
 * 如果对实现类进行了增强，如事务、日志等，只能注入接口。
 
-#### 分析
+#### 2.2 分析
 
 首先要明确一点，像事务、日志等这种对实现类的增强都是通过AOP动态代理来实现的。AOP的原理就是动态代理，动态代理分为两种：一种是**基于JDK的动态代理**，这种是基于实现类的实现；一种是**基于Cglib的动态代理**，这种是基于子类的实现。
 
@@ -660,9 +660,9 @@ AnarkhImplProxy anarkhImplProxy = factory.createProxy();//这个增强类对象a
 
 因此，如果是直接注入被增强的实现类，其代理对象不会有被增强的内容（事务、日志等），因此会报错。
 
-### 扩展
+### 3. 扩展
 
-#### @Autowired注入原理
+#### 3.1 @Autowired注入原理
 
 @Autowired是Spring的注解，@Autowired默认先按照byType，如果发现找到多个bean，则改为按照byName方式比对，如果还有多个bean，就会报出异常。
 
@@ -674,7 +674,7 @@ byName 通过参数名 自动装配，如果一个bean的name 和另外一个bea
 
 byType 通过参数的数据类型自动自动装配，如果一个bean的数据类型和另外一个bean的property属性的数据类型兼容，就自动装配。
 
-#### 一个接口多个实现类的注入情况
+#### 3.2 一个接口多个实现类的注入情况
 
 例子代码：
 
@@ -728,6 +728,299 @@ public class AnarkhServiceImpl2 implements AnarkhService{
 ```
 
 这样如果在使用@Autowired获取实例时，如果不指定bean的名字，就会默认获取AnarkhServiceImpl2的bean，如果指定了bean的名字则以指定的为准。
+
+#### 3.3 @Autowired的使用范围
+
+**Autowired作用范围：**
+
+* 构造器
+* 方法
+* 参数
+* 成员变量
+* 注解
+
+##### 3.3.1 成员变量
+
+在成员变量上使用@Autowired注解，这种方式是平时使用最多的场景：
+
+```java
+@Service
+public class UserService {
+    @Autowired
+    private IUser user;
+}
+```
+
+##### 3.3.2 构造器
+
+在构造器上使用@Autowired注解：
+
+```java
+@Service
+public class UserService {
+
+    private IUser user;
+
+    @Autowired
+    public UserService(IUser user) {
+        this.user = user;
+        System.out.println("user:" + user);
+    }
+}
+```
+
+注意：在构造器上加@Autowired注解，实际上还是使用了@Autowired装配方式，并非构造器装配。
+
+##### 3.3.3 方法
+
+在普通方法上加@Autowired注解：
+
+```java
+@Service
+public class UserService {
+
+    @Autowired
+    public void test(IUser user) {
+       user.say();
+    }
+}
+```
+
+Spring会在项目启动的过程中，自动调用一次加了@Autowired注解的方法，我们可以在该方法上做一些初始化的工作。
+
+也可以在setter方法上使用@Autowired注解：
+
+```java
+@Service
+public class UserService {
+
+    private IUser user;
+
+    @Autowired
+    public void setUser(IUser user) {
+        this.user = user;
+    }
+}
+```
+
+##### 3.3.4 参数
+
+可以在构造器的入参上加@Autowired注解：
+
+```java
+@Service
+public class UserService {
+
+    private IUser user;
+
+    public UserService(@Autowired IUser user) {
+        this.user = user;
+        System.out.println("user:" + user);
+    }
+}
+```
+
+也可以在非静态方法的入参上加@Autowired注解：
+
+```java
+@Service
+public class UserService {
+
+    public void test(@Autowired IUser user) {
+       user.say();
+    }
+}
+```
+
+##### 3.3.5 注解
+
+在注解上使用@Autowired不多。
+
+#### 3.4 @Autowired自动装配多个实例
+
+上面举的例子都是通过@Autowired自动装配单个实例，但是它也能完成对多个实例的装配：
+
+```java
+//IUser类
+public interface IUser {
+    void say();
+}
+
+//User1类
+@Service
+public class User1 implements IUser{
+    @Override
+    public void say() {
+    }
+}
+
+//User2类
+@Service
+public class User2 implements IUser{
+    @Override
+    public void say() {
+    }
+}
+
+//UserService类
+@Service
+public class UserService {
+
+    @Autowired
+    private List<IUser> userList;
+
+    @Autowired
+    private Set<IUser> userSet;
+
+    @Autowired
+    private Map<String, IUser> userMap;
+
+    public void test() {
+        System.out.println("userList:" + userList);
+        System.out.println("userSet:" + userSet);
+        System.out.println("userMap:" + userMap);
+    }
+}
+```
+
+```java
+//UController类
+@RequestMapping("/u")
+@RestController
+public class UController {
+
+    @Autowired
+    private UserService userService;
+
+    @RequestMapping("/test")
+    public String test() {
+        userService.test();
+        return "success";
+    }
+}
+```
+
+调用接口后：
+
+![](.\img\Problem\autowired装配多个实例.jpg)
+
+从上图中看出：userList、userSet和userMap都打印出了两个元素，说明@Autowired会自动把相同类型的IUser对象收集到集合中。
+
+#### 3.5 常见的@Autowired装配失败原因
+
+##### 3.5.1 没有加@Service注解
+
+在类上面忘了加@Controller、@Service、@Component、@Repository等注解，spring就无法完成自动装配的功能，例如：
+
+```java
+public class UserService {
+
+    @Autowired
+    private IUser user;
+
+    public void test() {
+        user.say();
+    }
+}
+```
+
+##### 3.5.2 注入Filter或Listener
+
+web应用启动的顺序是：`listener`->`filter`->`servlet`。
+
+![](.\img\Problem\web应用启动顺序.png)
+
+
+
+下面案例则是在Filter使用了@Autowired报错的例子：
+
+```java
+![Filter中使用@Autowired报错](F:\myNewBlob2\Anarkh-Lee.github.io\_posts\img\Problem\Filter中使用@Autowired报错.png)public class UserFilter implements Filter {
+
+    @Autowired
+    private IUser user;
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        user.say();
+    }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+
+    }
+
+    @Override
+    public void destroy() {
+    }
+}
+
+@Configuration
+public class FilterConfig {
+
+    @Bean
+    public FilterRegistrationBean filterRegistrationBean() {
+        FilterRegistrationBean bean = new FilterRegistrationBean();
+        bean.setFilter(new UserFilter());
+        bean.addUrlPatterns("/*");
+        return bean;
+    }
+}
+```
+
+程序在启动的时候就会报错：
+
+![](.\img\Problem\Filter中使用@Autowired报错.png)
+
+可以看到tomcat无法正常启动。这是因为：SpringMVC的启动是在DispatchServlet里面做的，而它是在listener和filter之后执行的。如果我们想在listener和filter里面@Autowired某个bean，肯定是不行的，因为filter初始化的时候，此时bean还没有初始化，无法自动装配。
+
+如果在工作当中真的需要这样做（在Filter或者Listener中使用@Autowired），可以使用WebApplicationContextUtils.getWebApplicationContext获取当前的ApplicationContext，再通过它获取到bean实例：
+
+```java
+public class UserFilter  implements Filter {
+
+    private IUser user;
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        ApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(filterConfig.getServletContext());
+        this.user = ((IUser)(applicationContext.getBean("user1")));
+        user.say();
+    }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+}
+```
+
+##### 3.5.3 注解未被@ComponentScan扫描
+
+通常情况下，@Controller、@Service、@Component、@Repository、@Configuration等注解，是需要通过@ComponentScan注解扫描，收集元数据的。
+
+但是，如果没有加@ComponentScan注解，或者@ComponentScan注解扫描的路径不对，或者路径范围太小，会导致有些注解无法收集，到后面无法使用@Autowired完成自动装配的功能。
+
+有个好消息是，在springboot项目中，如果使用了`@SpringBootApplication`注解，它里面内置了@ComponentScan注解的功能。
+
+##### 3.5.4 循环依赖问题
+
+如果A依赖于B，B依赖于C，C又依赖于A，这样就形成了一个死循环。
+
+![](.\img\Problem\循环依赖.png)
+
+spring的bean默认是单例的，如果单例bean使用@Autowired自动装配，大多数情况，能解决循环依赖问题。
+
+但是如果bean是多例的，会出现循环依赖问题，导致bean自动装配不了。
+
+还有有些情况下，如果创建了代理对象，即使bean是单例的，依然会出现循环依赖问题。
+
+
 
 
 
