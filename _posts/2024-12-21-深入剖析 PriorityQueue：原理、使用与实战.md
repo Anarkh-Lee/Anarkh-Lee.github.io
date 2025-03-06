@@ -1,9 +1,10 @@
 ---
 layout: post
 title: '深入剖析 PriorityQueue：原理、使用与实战'
+subtitle: "深入剖析 PriorityQueue：原理、使用与实战"
 date: 2024-12-21
 author: Anarkh-Lee
-cover: 'http://on2171g4d.bkt.clouddn.com/jekyll-banner.png'
+cover: './assets/img/hero.jpg'
 tags: Java
 
 
