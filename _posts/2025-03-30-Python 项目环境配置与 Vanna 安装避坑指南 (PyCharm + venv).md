@@ -199,8 +199,8 @@ pip install vanna
 
 安装成功：
 
-![]({{ '/assets/img/python/01.png' | prepend: '' }})
-![](.\img\python\01.png)
+![]({{ '/assets/img/Python/01.png' | prepend: '' }})
+![](.\img\Python\01.png)
 
 # 7. 总结
 
